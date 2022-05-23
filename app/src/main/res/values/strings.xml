@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Double Joystick</string>
+    <string name="button_name_connect">Connect</string>
+    <string name="button_name_settings">Settings</string>
+    <string name="label_autoconnect">Autoconnect</string>
+    <string name="label_ms">ms</string>
+    <string name="connect_info">btn connect was clicked</string>
 </resources>
