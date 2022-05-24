@@ -1,17 +1,21 @@
 package ru.overbye.doublejoystick;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.Button;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -51,11 +55,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button openButton = (Button)findViewById(R.id.open);
-        Button sendButton = (Button)findViewById(R.id.send);
-        Button closeButton = (Button)findViewById(R.id.close);
-        myLabel = (TextView)findViewById(R.id.label);
-        myTextbox = (EditText)findViewById(R.id.entry);
+        Button openButton = (Button) findViewById(R.id.open);
+        Button sendButton = (Button) findViewById(R.id.send);
+        Button closeButton = (Button) findViewById(R.id.close);
+        myLabel = (TextView) findViewById(R.id.label);
+        myTextbox = (EditText) findViewById(R.id.entry);
 
         latency = findViewById(R.id.latency);
         checkBox = findViewById(R.id.checkBox);
@@ -70,68 +74,65 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Open Button
-        openButton.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                try
-                {
+        openButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
                     findBT();
                     openBT();
+                } catch (IOException ex) {
                 }
-                catch (IOException ex) { }
             }
         });
 
         //Send Button
-        sendButton.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                try
-                {
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
                     sendData();
+                } catch (IOException ex) {
                 }
-                catch (IOException ex) { }
             }
         });
 
         //Close button
-        closeButton.setOnClickListener(new View.OnClickListener()
-        {
-            public void onClick(View v)
-            {
-                try
-                {
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                try {
                     closeBT();
+                } catch (IOException ex) {
                 }
-                catch (IOException ex) { }
             }
         });
 
     }
 
-    void findBT()
-    {
+    void findBT() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(mBluetoothAdapter == null)
-        {
+        if (mBluetoothAdapter == null) {
             myLabel.setText("No bluetooth adapter available");
         }
 
-        if(!mBluetoothAdapter.isEnabled())
-        {
+        if (!mBluetoothAdapter.isEnabled()) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+
             Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBluetooth, 0);
+
         }
 
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-        if(pairedDevices.size() > 0)
-        {
-            for(BluetoothDevice device : pairedDevices)
-            {
-                if(device.getName().equals("MattsBlueTooth"))
-                {
+        if (pairedDevices.size() > 0) {
+            for (BluetoothDevice device : pairedDevices) {
+                if (device.getName().equals("MattsBlueTooth")) {
                     mmDevice = device;
                     break;
                 }
@@ -140,9 +141,18 @@ public class MainActivity extends AppCompatActivity {
         myLabel.setText("Bluetooth Device Found");
     }
 
-    void openBT() throws IOException
-    {
+    void openBT() throws IOException {
         UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); //Standard SerialPortService ID
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         mmSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
         mmSocket.connect();
         mmOutputStream = mmSocket.getOutputStream();
